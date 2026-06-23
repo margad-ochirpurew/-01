@@ -78,8 +78,9 @@
 </head>
 <body class="font-montserrat text-wedding-charcoal bg-zinc-200 overflow-x-hidden selection:bg-wedding-gold selection:text-white transition-colors duration-500">
 
-    <audio id="bgMusic" loop preload="auto">
-        <source src="https://assets.mixkit.co/music/preview/mixkit-wedding-piano-and-strings-107.mp3" type="audio/mpeg">
+    <!-- Дууны хэсэг (Одоо loop автоматаар биш JS-ээр зохицуулагдана) -->
+    <audio id="bgMusic" playsinline preload="auto">
+        <source src="./urag_ay.mp3" type="audio/mpeg">
     </audio>
 
     <div id="doorOverlay" class="view-section active fixed inset-0 z-50 flex-col items-center justify-center bg-wedding-navy text-wedding-cream transition-opacity duration-1000 px-6 text-center">
@@ -292,7 +293,35 @@
                     <span class="text-wedding-gold">🎨</span> Өнгөний сонголт
                 </h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="themeSelectors">
+                </div>
+            </div>
+
+            <!-- ШИНЭ ХЭСЭГ: Дуу хөгжим удирдах (Admin) -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200 mb-6">
+                <h3 class="text-sm font-bold text-wedding-navy mb-4 flex items-center gap-2">
+                    <span class="text-wedding-gold">🎵</span> Хөгжим удирдах
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 bg-stone-50 p-4 rounded-xl border border-stone-100">
+                    <div>
+                        <label class="block text-[10px] text-stone-500 tracking-wider mb-1 uppercase font-medium">Ая сонгох</label>
+                        <select id="adminAudioFile" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-xs focus:outline-none focus:border-wedding-gold">
+                            <option value="https://assets.mixkit.co/music/preview/mixkit-wedding-piano-and-strings-107.mp3">Анхны ая (Mixkit)</option>
+                            <option value="./urag_ay.mp3">urag_ay.mp3</option>
+                            <option value="./urag_ay1.mp3">urag_ay1.mp3</option>
+                        </select>
                     </div>
+                    <div>
+                        <label class="block text-[10px] text-stone-500 tracking-wider mb-1 uppercase font-medium">Эхлэх (секундээр)</label>
+                        <input type="number" id="adminAudioStart" placeholder="Жнь: 10" value="0" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-xs focus:outline-none focus:border-wedding-gold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-stone-500 tracking-wider mb-1 uppercase font-medium">Дуусах (секундээр)</label>
+                        <input type="number" id="adminAudioEnd" placeholder="Жнь: 60" value="0" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-xs focus:outline-none focus:border-wedding-gold">
+                    </div>
+                </div>
+                <p class="text-[9px] text-stone-400 mb-3 italic">Санамж: 1 минут 20 секундээс эхлүүлэх бол 80 гэж бичнэ үү. (Дуусах цаг дээр 0 гэвэл дуустал нь явна).</p>
+                <button id="btn-save-audio" class="w-full py-3 bg-wedding-navy hover:bg-wedding-charcoal transition text-white text-xs rounded-xl font-bold tracking-widest uppercase">Хөгжмийн тохиргоог хадгалах</button>
+                <p id="audioError" class="text-emerald-600 text-[11px] font-bold mt-3 hidden text-center">Амжилттай хадгалагдлаа!</p>
             </div>
 
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200 mb-6">
@@ -410,6 +439,13 @@
         let chartInstance = null;
         let schedules = [];
 
+        // Дууны тохиргоог хадгалах хувьсагч
+        let currentAudioSettings = { 
+            filename: './urag_ay.mp3', 
+            startTime: 0, 
+            endTime: 0 
+        };
+
         const themes = [
             { name: "Бор хүрэн", colors: { navy: '92 58 33', gold: '201 122 58', goldLight: '245 213 179', goldDark: '163 87 29', cream: '252 248 242', charcoal: '59 37 19', blush: '249 238 230' } },
             { name: "Тэнгэрийн цэнхэр", colors: { navy: '30 58 138', gold: '59 130 246', goldLight: '191 219 254', goldDark: '29 78 216', cream: '240 249 255', charcoal: '30 58 138', blush: '219 234 254' } },
@@ -486,6 +522,69 @@
             });
         }
 
+        // --- ДУУ ХӨГЖИМ УДИРДАХ ФУНКЦУУД ---
+        function listenToAudioSettings() {
+            if (!currentUser || !db) return;
+            const audioDoc = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'audio');
+            onSnapshot(audioDoc, snapshot => {
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    const oldFilename = currentAudioSettings.filename;
+                    currentAudioSettings = { ...currentAudioSettings, ...data };
+                    
+                    // Админ хэсгийн мэдээллийг шинэчлэх
+                    document.getElementById('adminAudioFile').value = currentAudioSettings.filename;
+                    document.getElementById('adminAudioStart').value = currentAudioSettings.startTime;
+                    document.getElementById('adminAudioEnd').value = currentAudioSettings.endTime;
+
+                    // Хэрэв дууны нэр солигдсон бол шинэ дууг ачааллана
+                    const music = document.getElementById("bgMusic");
+                    if (oldFilename !== currentAudioSettings.filename) {
+                        const wasPlaying = !music.paused;
+                        music.src = currentAudioSettings.filename;
+                        music.load();
+                        music.currentTime = currentAudioSettings.startTime;
+                        if (wasPlaying) {
+                            music.play().catch(e => console.log("Дууг автоматаар явуулж чадсангүй", e));
+                        }
+                    }
+                }
+            });
+        }
+
+        document.getElementById('btn-save-audio').addEventListener('click', async () => {
+            const filename = document.getElementById('adminAudioFile').value;
+            const startTime = parseInt(document.getElementById('adminAudioStart').value) || 0;
+            const endTime = parseInt(document.getElementById('adminAudioEnd').value) || 0;
+            
+            if (db && currentUser) {
+                try {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'audio'), { filename, startTime, endTime }, { merge: true });
+                    const msg = document.getElementById('audioError');
+                    msg.classList.remove('hidden');
+                    setTimeout(() => msg.classList.add('hidden'), 3000);
+                } catch(e) {
+                    console.error("Audio save error:", e);
+                }
+            }
+        });
+
+        // Дууны үргэлжлэх хугацаа болон давталтыг (loop) хянах код
+        const musicEl = document.getElementById("bgMusic");
+        musicEl.addEventListener('timeupdate', () => {
+            if (currentAudioSettings.endTime > 0 && musicEl.currentTime >= currentAudioSettings.endTime) {
+                musicEl.currentTime = currentAudioSettings.startTime; // Сонгосон цагаас буцаж эхлэх
+                musicEl.play();
+            }
+        });
+
+        musicEl.addEventListener('ended', () => {
+            // Дуу бүрэн дуусвал буцаад л эхлэх цагаасаа эхэлнэ
+            musicEl.currentTime = currentAudioSettings.startTime;
+            musicEl.play();
+        });
+        // ---------------------------------
+
         const savedTheme = localStorage.getItem(`wedding_theme_${appId}`);
         if(savedTheme !== null) applyTheme(parseInt(savedTheme));
         renderThemeSelectors();
@@ -504,6 +603,7 @@
                         listenToWishes(); 
                         listenToSchedule();
                         listenToTheme();
+                        listenToAudioSettings(); // Шинээр нэмсэн: Хөгжим сонсогч
                     }
                 });
             } catch(e) {
@@ -881,6 +981,9 @@
 
         document.getElementById("btn-open").onclick = () => {
             const music = document.getElementById("bgMusic");
+            
+            // Сонгосон дууны эхлэх цагаас нь тоглуулж эхэлнэ
+            music.currentTime = currentAudioSettings.startTime || 0;
             music.play().then(() => {
                 document.getElementById("btn-music").classList.remove("hidden");
             }).catch(() => {
