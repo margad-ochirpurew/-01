@@ -410,7 +410,6 @@
         let chartInstance = null;
         let schedules = [];
 
-        // --- ӨНГӨНИЙ СОНГОЛТУУД ---
         const themes = [
             { name: "Бор хүрэн", colors: { navy: '92 58 33', gold: '201 122 58', goldLight: '245 213 179', goldDark: '163 87 29', cream: '252 248 242', charcoal: '59 37 19', blush: '249 238 230' } },
             { name: "Тэнгэрийн цэнхэр", colors: { navy: '30 58 138', gold: '59 130 246', goldLight: '191 219 254', goldDark: '29 78 216', cream: '240 249 255', charcoal: '30 58 138', blush: '219 234 254' } },
@@ -441,7 +440,6 @@
             root.style.setProperty('--color-charcoal', t.charcoal);
             root.style.setProperty('--color-blush', t.blush);
             
-            // Одны өнгө болон зураг солих
             const goldRGB = t.gold.split(' ');
             currentStarColor = `rgb(${goldRGB[0]}, ${goldRGB[1]}, ${goldRGB[2]})`;
             
@@ -450,7 +448,6 @@
                 mainImg.src = `https://placehold.co/480x600/${rgbToHex(t.navy)}/${rgbToHex(t.gold)}?font=playfair&text=Ургийн+Баяр`;
             }
 
-            // График шинэчлэх
             if(chartInstance) {
                 chartInstance.data.datasets[0].backgroundColor = [`rgb(${t.navy})`, '#e5e7eb'];
                 chartInstance.update();
@@ -489,12 +486,10 @@
             });
         }
 
-        // Эхлэх үед локалоос өнгө унших
         const savedTheme = localStorage.getItem(`wedding_theme_${appId}`);
         if(savedTheme !== null) applyTheme(parseInt(savedTheme));
         renderThemeSelectors();
 
-        // --- FIREBASE ЭХЛҮҮЛЭХ ---
         if (isFirebaseConfigured) {
             try {
                 const app = initializeApp(firebaseConfig);
@@ -519,7 +514,6 @@
             renderLocalWishes();
         }
 
-        // Цаг тоологчийн логик
         function initCountdown() {
             const weddingDate = new Date("Aug 1, 2026 09:00:00").getTime();
 
@@ -545,7 +539,6 @@
             }, 1000);
         }
 
-        // --- ХӨТӨЛБӨРИЙН ЛОГИК ---
         function listenToSchedule() {
             if (!currentUser || !db) return;
             const q = collection(db, 'artifacts', appId, 'public', 'data', 'schedules');
@@ -675,7 +668,6 @@
             document.getElementById('schStart').focus();
         };
 
-        // Сэтгэгдэл татах
         function listenToWishes() {
             if (!currentUser || !db) return;
             const q = collection(db, 'artifacts', appId, 'public', 'data', 'wishes');
@@ -887,9 +879,7 @@
             renderWishes(wishes);
         }
 
-        // --- ЗАСВАР ХИЙГДСЭН ХЭСЭГ (Дуу шууд явах тохиргоо) ---
         document.getElementById("btn-open").onclick = () => {
-            // 1. Товч дармагц дууг шууд эхлүүлэх
             const music = document.getElementById("bgMusic");
             music.play().then(() => {
                 document.getElementById("btn-music").classList.remove("hidden");
@@ -899,7 +889,6 @@
                 document.getElementById("musicOff").classList.remove("hidden");
             });
 
-            // 2. Дэлгэцийн шилжих хөдөлгөөнүүд
             document.getElementById("doorOverlay").style.opacity = "0";
             setTimeout(() => {
                 document.getElementById("doorOverlay").classList.remove("active");
@@ -909,7 +898,6 @@
                 initStars();
             }, 800);
         };
-        // -----------------------------------------------------
 
         document.getElementById("btn-music").onclick = () => {
             const music = document.getElementById("bgMusic");
@@ -965,7 +953,7 @@
         };
 
         function escapeHTML(str) { 
-            return str.replace(/[&<>'"]/g, t => ({ '&': '&', '<': '<', '>': '>', "'": '&#39;', '"': '&quot;' }[t] || t)); 
+            return str.replace(/[&<>'"]/g, t => ({ '&': '&', '<': '<', '>': '>', "'": ''', '"': '"' }[t] || t)); 
         }
 
         let canvas, ctx, stars = [];
