@@ -7,20 +7,62 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,500&family=Pinyon+Script&display=swap" rel="stylesheet">
+    <style>
+        /* Өнгөний үндсэн хувьсагчид (Анхдагч: Уламжлалт хүрэн) */
+        :root {
+            --color-navy: 92 58 33;
+            --color-gold: 201 122 58;
+            --color-gold-light: 245 213 179;
+            --color-gold-dark: 163 87 29;
+            --color-cream: 252 248 242;
+            --color-charcoal: 59 37 19;
+            --color-blush: 249 238 230;
+        }
+
+        html { scroll-behavior: smooth; }
+        @keyframes pulse-slow { 
+            0%, 100% { transform: scale(1); opacity: 0.9; box-shadow: 0 0 0 0 rgb(var(--color-gold) / 0.4); } 
+            50% { transform: scale(1.02); opacity: 1; box-shadow: 0 0 20px 0 rgb(var(--color-gold) / 0.6); } 
+        }
+        .pulse-btn { animation: pulse-slow 2.5s infinite ease-in-out; }
+        
+        @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fade-in-up 1s ease-out forwards; }
+
+        #starCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; opacity: 0.6; }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgb(var(--color-cream)); }
+        ::-webkit-scrollbar-thumb { background: rgb(var(--color-gold)); border-radius: 3px; }
+        
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        
+        .view-section { display: none; }
+        .view-section.active { display: flex; }
+
+        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgb(var(--color-gold) / 0.2); }
+        
+        /* Билгэдэл хээ угалзны дэвсгэр хэв маяг */
+        .pattern-bg {
+            background-color: transparent;
+            background-image: radial-gradient(rgb(var(--color-gold) / 0.15) 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+    </style>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
                         wedding: { 
-                            /* Зөөлөн, дулаахан уламжлалт өнгөнүүд (Нэршлийг хуучнаар үлдээсэн нь бусад кодыг эвдэхгүй байх зорилготой) */
-                            navy: '#5c3a21',     /* Бор хүрэн */
-                            gold: '#c97a3a',     /* Дулаан зэс/шаргал */
-                            goldLight: '#f5d5b3',
-                            goldDark: '#a3571d', 
-                            cream: '#fcf8f2',    /* Зөөлөн шаргал */
-                            charcoal: '#3b2513',
-                            blush: '#f9eee6'     
+                            navy: 'rgb(var(--color-navy) / <alpha-value>)',
+                            gold: 'rgb(var(--color-gold) / <alpha-value>)',
+                            goldLight: 'rgb(var(--color-gold-light) / <alpha-value>)',
+                            goldDark: 'rgb(var(--color-gold-dark) / <alpha-value>)',
+                            cream: 'rgb(var(--color-cream) / <alpha-value>)',
+                            charcoal: 'rgb(var(--color-charcoal) / <alpha-value>)',
+                            blush: 'rgb(var(--color-blush) / <alpha-value>)'
                         }
                     },
                     fontFamily: {
@@ -33,40 +75,10 @@
             }
         }
     </script>
-    <style>
-        html { scroll-behavior: smooth; }
-        @keyframes pulse-slow { 0%, 100% { transform: scale(1); opacity: 0.9; box-shadow: 0 0 0 0 rgba(201, 122, 58, 0.4); } 50% { transform: scale(1.02); opacity: 1; box-shadow: 0 0 20px 0 rgba(201, 122, 58, 0.6); } }
-        .pulse-btn { animation: pulse-slow 2.5s infinite ease-in-out; }
-        
-        @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fade-in-up 1s ease-out forwards; }
-
-        #starCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; opacity: 0.6; }
-        
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #fcf8f2; }
-        ::-webkit-scrollbar-thumb { background: #c97a3a; border-radius: 3px; }
-        
-        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
-        @media (min-width: 768px) { .chart-container { height: 350px; } }
-        
-        .view-section { display: none; }
-        .view-section.active { display: flex; }
-
-        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(201, 122, 58, 0.2); }
-        
-        /* Билгэдэл хээ угалзны дэвсгэр хэв маяг */
-        .pattern-bg {
-            background-color: transparent;
-            background-image: radial-gradient(rgba(201, 122, 58, 0.15) 2px, transparent 2px);
-            background-size: 30px 30px;
-        }
-    </style>
 </head>
-<body class="font-montserrat text-wedding-charcoal bg-zinc-200 overflow-x-hidden selection:bg-wedding-gold selection:text-white">
+<body class="font-montserrat text-wedding-charcoal bg-zinc-200 overflow-x-hidden selection:bg-wedding-gold selection:text-white transition-colors duration-500">
 
     <audio id="bgMusic" loop preload="auto">
-        <!-- Уламжлалт эсвэл зөөлөн ая байвал тохиромжтой -->
         <source src="https://assets.mixkit.co/music/preview/mixkit-wedding-piano-and-strings-107.mp3" type="audio/mpeg">
     </audio>
 
@@ -76,7 +88,7 @@
         <div class="absolute inset-0 pattern-bg opacity-30"></div>
         <div class="absolute inset-0 bg-gradient-to-b from-transparent via-wedding-navy/70 to-wedding-navy"></div>
         
-        <div class="z-10 max-w-sm w-full border border-wedding-gold/40 p-10 rounded-t-full rounded-b-2xl bg-wedding-navy/90 backdrop-blur-md shadow-[0_0_40px_rgba(201,122,58,0.2)] relative animate-fade-in">
+        <div class="z-10 max-w-sm w-full border border-wedding-gold/40 p-10 rounded-t-full rounded-b-2xl bg-wedding-navy/90 backdrop-blur-md shadow-[0_0_40px_rgba(var(--color-gold),0.2)] relative animate-fade-in">
             <div class="text-wedding-gold font-cinzel tracking-[0.2em] text-[10px] mb-4 uppercase">Ургийн баярт тавтай морил</div>
             <div class="text-5xl my-6 text-wedding-gold">❖</div>
             <h2 class="font-playfair text-3xl font-semibold text-wedding-cream mb-4 drop-shadow-md leading-tight">НЭМЭГТ Овгийн</h2>
@@ -103,12 +115,12 @@
 
         <!-- Толгой хэсэг: Зураг -->
         <div class="w-full relative h-[50vh] min-h-[350px]">
-            <img src="https://placehold.co/480x600/5c3a21/c97a3a?font=playfair&text=Ургийн+Баяр" alt="Ургийн баяр" class="w-full h-full object-cover rounded-b-[40px] shadow-sm">
+            <img id="mainCoverImg" src="https://placehold.co/480x600/5c3a21/c97a3a?font=playfair&text=Ургийн+Баяр" alt="Ургийн баяр" class="w-full h-full object-cover rounded-b-[40px] shadow-sm transition-all duration-500">
             <div class="absolute inset-0 bg-gradient-to-t from-wedding-cream via-wedding-cream/30 to-black/40 rounded-b-[40px]"></div>
             
             <div class="absolute bottom-6 left-0 w-full text-center px-4">
                 <p class="text-[10px] tracking-[4px] text-wedding-gold font-cinzel uppercase mb-2">Ургийн баярын урилга</p>
-                <h1 class="font-playfair text-2xl font-bold text-wedding-navy drop-shadow-sm">Дамаагийн Цэвээний<br>үр сад танаа</h1>
+                <h1 class="font-playfair text-2xl font-bold text-wedding-navy drop-shadow-sm">Дамаагийн Цэвээний<br>үр сад</h1>
             </div>
         </div>
 
@@ -122,7 +134,7 @@
                 Ураг төрлийн хэлхээ холбоогоо <br><span class="text-wedding-gold italic">улам бэхжүүлэх ерөөлтэй өдөр</span>
             </h2>
             <div class="text-wedding-charcoal/80 leading-loose font-light text-[13px] tracking-wide mt-6 mb-8 text-justify" style="text-align-last: center;">
-                Элэг нэгт ахан дүүсээрээ хуран цугларч, НЭМЭГТ Овгийн Дамаагийн Цэвээний үр сад нарын ургийн танилцах өдөрлөг, баярын арга хэмжээнд хүрэлцэн ирэхийг урьж байна.
+                Элэг нэгт ахан дүүсээрээ хуран цугларч, НЭМЭГТ Овгийн Дамаагийн Цэвээний үр сад нарын ургийн танилцах өдөрлөг, баярын арга хэмжээнд хүрэлцэн ирэхийг өргөнөөр урьж байна.
             </div>
 
             <!-- Цаг тоологч -->
@@ -177,7 +189,7 @@
             </a>
         </div>
 
-        <!-- ШИНЭ ХЭСЭГ: Хөтөлбөр -->
+        <!-- Хөтөлбөр -->
         <div class="w-[90%] my-8 z-10 relative">
             <div class="text-center mb-6">
                 <div class="text-[10px] tracking-[4px] text-stone-400 font-cinzel uppercase mb-1">Цагийн хуваарь</div>
@@ -191,32 +203,8 @@
             </div>
         </div>
 
-        <!-- Банкны данс -->
-        <div class="w-[90%] my-8 z-10 relative">
-            <div class="glass-panel p-6 rounded-2xl text-center shadow-md">
-                <div class="text-3xl mb-3 text-wedding-gold">🎁</div>
-                <h3 class="font-playfair text-xl text-wedding-navy font-semibold mb-2">Хандив / Хураамж</h3>
-                <p class="text-[11px] text-stone-500 mb-5 leading-relaxed px-2">Ургийн баярын үйл ажиллагаанд зориулан доорх дансыг ашиглан хураамж, хандиваа илгээх боломжтой.</p>
-                
-                <div class="flex flex-col gap-3">
-                    <div class="bg-white/90 border border-wedding-gold/20 rounded-xl p-3 flex items-center justify-between shadow-sm">
-                        <div class="text-left flex-1">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="bg-blue-50 text-blue-700 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase border border-blue-100">Хаан Банк</span>
-                                <span class="text-[10px] text-stone-500 font-medium">С.Батхүү</span>
-                            </div>
-                            <div class="font-mono text-sm text-wedding-navy font-bold tracking-wider" id="acc-1">5011223344</div>
-                        </div>
-                        <button type="button" onclick="copyAccount('acc-1', this)" class="p-2.5 bg-wedding-blush hover:bg-wedding-gold/20 text-wedding-goldDark rounded-lg transition border border-wedding-gold/20">
-                            Хуулах
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- RSVP / Ирц бүртгэл -->
-        <div class="w-[90%] bg-wedding-navy text-wedding-cream p-7 rounded-3xl my-6 relative shadow-[0_10px_30px_rgba(92,58,33,0.3)] z-10">
+        <div class="w-[90%] bg-wedding-navy text-wedding-cream p-7 rounded-3xl my-6 relative shadow-[0_10px_30px_rgba(var(--color-navy),0.3)] z-10">
             <div class="absolute inset-0 pattern-bg opacity-10 rounded-3xl pointer-events-none"></div>
             <div class="relative z-10">
                 <div class="text-center mb-6">
@@ -314,7 +302,17 @@
                 <button id="btn-admin-close" class="px-5 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-[10px] uppercase tracking-widest rounded-xl transition border border-red-100">Гарах</button>
             </div>
 
-            <!-- ШИНЭ ХЭСЭГ: Хөтөлбөр удирдах (Admin) -->
+            <!-- ШИНЭ ХЭСЭГ: Өнгө удирдах (Admin) -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200 mb-6">
+                <h3 class="text-sm font-bold text-wedding-navy mb-4 flex items-center gap-2">
+                    <span class="text-wedding-gold">🎨</span> Өнгөний сонголт
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="themeSelectors">
+                    <!-- Сонголтууд JS-ээр дуудагдана -->
+                </div>
+            </div>
+
+            <!-- Хөтөлбөр удирдах (Admin) -->
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200 mb-6">
                 <h3 class="text-sm font-bold text-wedding-navy mb-4 flex items-center gap-2">
                     <span class="text-wedding-gold">🗓️</span> Хөтөлбөр удирдах
@@ -413,7 +411,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = 'reunion-inv-template-01'; 
         
@@ -434,6 +432,91 @@
         let chartInstance = null;
         let schedules = [];
 
+        // --- ӨНГӨНИЙ СОНГОЛТУУД ---
+        const themes = [
+            { name: "Бор хүрэн", colors: { navy: '92 58 33', gold: '201 122 58', goldLight: '245 213 179', goldDark: '163 87 29', cream: '252 248 242', charcoal: '59 37 19', blush: '249 238 230' } },
+            { name: "Тэнгэрийн цэнхэр", colors: { navy: '30 58 138', gold: '59 130 246', goldLight: '191 219 254', goldDark: '29 78 216', cream: '240 249 255', charcoal: '30 58 138', blush: '219 234 254' } },
+            { name: "Ойн ногоон", colors: { navy: '20 83 45', gold: '34 197 94', goldLight: '187 247 208', goldDark: '22 101 52', cream: '240 253 244', charcoal: '20 83 45', blush: '220 252 231' } },
+            { name: "Бадмаараг улаан", colors: { navy: '127 29 29', gold: '239 68 68', goldLight: '254 202 202', goldDark: '185 28 28', cream: '254 242 242', charcoal: '69 10 10', blush: '254 226 226' } },
+            { name: "Нил ягаан", colors: { navy: '76 29 149', gold: '139 92 246', goldLight: '221 214 254', goldDark: '109 40 217', cream: '245 243 255', charcoal: '46 16 101', blush: '237 233 254' } },
+            { name: "Далайн оюу", colors: { navy: '19 78 74', gold: '20 184 166', goldLight: '153 246 228', goldDark: '15 118 110', cream: '240 253 250', charcoal: '4 47 46', blush: '204 251 241' } },
+            { name: "Сарнайн ягаан", colors: { navy: '131 24 67', gold: '244 63 94', goldLight: '254 205 211', goldDark: '225 29 72', cream: '255 241 242', charcoal: '76 5 25', blush: '255 228 230' } },
+            { name: "Мөнгөлөг саарал", colors: { navy: '31 41 55', gold: '107 114 128', goldLight: '229 231 235', goldDark: '55 65 81', cream: '249 250 251', charcoal: '17 24 39', blush: '243 244 246' } }
+        ];
+
+        let currentStarColor = "rgb(201, 122, 58)";
+
+        function rgbToHex(rgbStr) {
+            return rgbStr.split(' ').map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
+        }
+
+        function applyTheme(index) {
+            if(index < 0 || index >= themes.length) return;
+            const t = themes[index].colors;
+            const root = document.documentElement;
+            
+            root.style.setProperty('--color-navy', t.navy);
+            root.style.setProperty('--color-gold', t.gold);
+            root.style.setProperty('--color-gold-light', t.goldLight);
+            root.style.setProperty('--color-gold-dark', t.goldDark);
+            root.style.setProperty('--color-cream', t.cream);
+            root.style.setProperty('--color-charcoal', t.charcoal);
+            root.style.setProperty('--color-blush', t.blush);
+            
+            // Одны өнгө болон зураг солих
+            const goldRGB = t.gold.split(' ');
+            currentStarColor = `rgb(${goldRGB[0]}, ${goldRGB[1]}, ${goldRGB[2]})`;
+            
+            const mainImg = document.getElementById("mainCoverImg");
+            if(mainImg) {
+                mainImg.src = `https://placehold.co/480x600/${rgbToHex(t.navy)}/${rgbToHex(t.gold)}?font=playfair&text=Ургийн+Баяр`;
+            }
+
+            // График шинэчлэх
+            if(chartInstance) {
+                chartInstance.data.datasets[0].backgroundColor = [`rgb(${t.navy})`, '#e5e7eb'];
+                chartInstance.update();
+            }
+        }
+
+        function renderThemeSelectors() {
+            const container = document.getElementById("themeSelectors");
+            container.innerHTML = themes.map((theme, i) => `
+                <button onclick="changeTheme(${i})" class="flex flex-col items-center gap-2 p-2 border rounded-xl hover:bg-stone-50 transition border-stone-200">
+                    <div class="w-full h-10 rounded-lg" style="background: linear-gradient(to bottom right, rgb(${theme.colors.navy.replace(/ /g, ',')}), rgb(${theme.colors.goldLight.replace(/ /g, ',')}))"></div>
+                    <span class="text-[10px] font-bold text-stone-600">${theme.name}</span>
+                </button>
+            `).join('');
+        }
+
+        window.changeTheme = async function(index) {
+            applyTheme(index);
+            localStorage.setItem(`wedding_theme_${appId}`, index);
+            if (db && currentUser) {
+                try {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'theme'), { index });
+                } catch(e) {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'theme'), { index });
+                }
+            }
+        };
+
+        function listenToTheme() {
+            if (!currentUser || !db) return;
+            const themeDoc = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'theme');
+            onSnapshot(themeDoc, snapshot => {
+                if (snapshot.exists()) {
+                    applyTheme(snapshot.data().index || 0);
+                }
+            });
+        }
+
+        // Эхлэх үед локалоос өнгө унших
+        const savedTheme = localStorage.getItem(`wedding_theme_${appId}`);
+        if(savedTheme !== null) applyTheme(parseInt(savedTheme));
+        renderThemeSelectors();
+
+        // --- FIREBASE ЭХЛҮҮЛЭХ ---
         if (isFirebaseConfigured) {
             try {
                 const app = initializeApp(firebaseConfig);
@@ -446,7 +529,8 @@
                     if (user) { 
                         currentUser = user; 
                         listenToWishes(); 
-                        listenToSchedule(); // Хөтөлбөр сонсох
+                        listenToSchedule();
+                        listenToTheme();
                     }
                 });
             } catch(e) {
@@ -459,7 +543,6 @@
 
         // Цаг тоологчийн логик
         function initCountdown() {
-            // Ургийн баяр болох огноо: 2026 оны 8 сарын 1, 09:00
             const weddingDate = new Date("Aug 1, 2026 09:00:00").getTime();
 
             const timer = setInterval(function() {
@@ -495,8 +578,6 @@
                 schedules.sort((a, b) => a.startMs - b.startMs);
                 renderPublicSchedule();
                 renderAdminSchedule();
-            }, (error) => {
-                console.error("Хөтөлбөр татахад алдаа гарлаа: ", error);
             });
         }
 
@@ -523,9 +604,7 @@
                 const isLast = index === schedules.length - 1;
                 return `
                 <div class="relative pl-6 py-2">
-                    <!-- Line -->
                     ${!isLast ? `<div class="absolute left-[11px] top-8 bottom-[-16px] w-[2px] bg-wedding-gold/30"></div>` : ''}
-                    <!-- Dot -->
                     <div class="absolute left-2 top-4 w-3 h-3 rounded-full bg-wedding-gold border-2 border-white shadow-sm z-10"></div>
                     
                     <div class="bg-white/90 p-4 rounded-xl border border-stone-200/50 shadow-sm ml-2">
@@ -545,8 +624,7 @@
                 container.innerHTML = `<p class="text-xs text-stone-400 italic px-2">Хөтөлбөр байхгүй байна</p>`;
                 return;
             }
-            container.innerHTML = schedules.map(s => {
-                return `
+            container.innerHTML = schedules.map(s => `
                 <div class="flex justify-between items-center p-3 bg-white border border-stone-200 rounded-xl shadow-sm">
                     <div>
                         <p class="text-xs font-bold text-wedding-navy mb-0.5">${escapeHTML(s.title)}</p>
@@ -556,8 +634,8 @@
                         <button onclick="window.editSchedule('${s.id}')" class="px-2 py-1 bg-blue-50 text-blue-600 rounded text-[10px] font-bold uppercase">Засах</button>
                         <button onclick="window.deleteSchedule('${s.id}')" class="px-2 py-1 bg-red-50 text-red-600 rounded text-[10px] font-bold uppercase">Устгах</button>
                     </div>
-                </div>`;
-            }).join('');
+                </div>
+            `).join('');
         }
 
         document.getElementById('btn-add-schedule').addEventListener('click', async () => {
@@ -567,30 +645,23 @@
             const errEl = document.getElementById('schError');
 
             if(!start || !end || !title) {
-                errEl.innerText = "Мэдээллийг гүйцэд оруулна уу!";
-                errEl.classList.remove('hidden');
-                return;
+                errEl.innerText = "Мэдээллийг гүйцэд оруулна уу!"; errEl.classList.remove('hidden'); return;
             }
 
             const startMs = new Date(start).getTime();
             const endMs = new Date(end).getTime();
 
             if(startMs >= endMs) {
-                errEl.innerText = "Дуусах цаг эхлэх цагаас хойно байх ёстой!";
-                errEl.classList.remove('hidden');
-                return;
+                errEl.innerText = "Дуусах цаг эхлэх цагаас хойно байх ёстой!"; errEl.classList.remove('hidden'); return;
             }
 
-            // Цагийн давхцал шалгах (Max(start1, start2) < Min(end1, end2))
             const isOverlap = schedules.some(s => {
                 if (window.editingScheduleId && s.id === window.editingScheduleId) return false;
                 return Math.max(startMs, s.startMs) < Math.min(endMs, s.endMs);
             });
 
             if (isOverlap) {
-                errEl.innerText = "Анхаар: Энэ цагт өөр хөтөлбөр давхардаж байна!";
-                errEl.classList.remove('hidden');
-                return;
+                errEl.innerText = "Анхаар: Энэ цагт өөр хөтөлбөр давхардаж байна!"; errEl.classList.remove('hidden'); return;
             }
 
             errEl.classList.add('hidden');
@@ -605,13 +676,9 @@
                     await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'schedules'), data);
                 }
 
-                document.getElementById('schStart').value = '';
-                document.getElementById('schEnd').value = '';
-                document.getElementById('schTitle').value = '';
+                document.getElementById('schStart').value = ''; document.getElementById('schEnd').value = ''; document.getElementById('schTitle').value = '';
             } catch(e) {
-                console.error("Алдаа гарлаа", e);
-                errEl.innerText = "Хадгалахад алдаа гарлаа.";
-                errEl.classList.remove('hidden');
+                errEl.innerText = "Хадгалахад алдаа гарлаа."; errEl.classList.remove('hidden');
             }
         });
 
@@ -624,48 +691,11 @@
         window.editSchedule = function(id) {
             const s = schedules.find(x => x.id === id);
             if(!s) return;
-            document.getElementById('schStart').value = s.start;
-            document.getElementById('schEnd').value = s.end;
-            document.getElementById('schTitle').value = s.title;
+            document.getElementById('schStart').value = s.start; document.getElementById('schEnd').value = s.end; document.getElementById('schTitle').value = s.title;
             window.editingScheduleId = id;
             document.getElementById('btn-add-schedule').innerText = "ӨӨРЧЛӨЛТИЙГ ХАДГАЛАХ";
             document.getElementById('schStart').focus();
         };
-        // --- ХӨТӨЛБӨРИЙН ЛОГИК ДУУСАВ ---
-
-
-        // Данс хуулах логик
-        window.copyAccount = function(elementId, btnElement) {
-            const textToCopy = document.getElementById(elementId).innerText;
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(textToCopy).then(() => showCopiedState(btnElement))
-                .catch(err => fallbackCopyTextToClipboard(textToCopy, btnElement));
-            } else {
-                fallbackCopyTextToClipboard(textToCopy, btnElement);
-            }
-        };
-
-        function fallbackCopyTextToClipboard(text, btnElement) {
-            var textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.top = "0"; textArea.style.left = "0"; textArea.style.position = "fixed";
-            document.body.appendChild(textArea);
-            textArea.focus(); textArea.select();
-            try { document.execCommand('copy') ? showCopiedState(btnElement) : null; } catch (err) {}
-            document.body.removeChild(textArea);
-        }
-
-        function showCopiedState(btn) {
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = `<span class="text-[9px] font-bold uppercase tracking-wider text-emerald-600">Хуулагдлаа ✓</span>`;
-            btn.classList.add('bg-emerald-50', 'border-emerald-200');
-            btn.classList.remove('bg-wedding-blush', 'text-wedding-goldDark');
-            setTimeout(() => {
-                btn.innerHTML = originalHTML;
-                btn.classList.remove('bg-emerald-50', 'border-emerald-200');
-                btn.classList.add('bg-wedding-blush', 'text-wedding-goldDark');
-            }, 2000);
-        }
 
         // Сэтгэгдэл татах
         function listenToWishes() {
@@ -776,6 +806,9 @@
             const ctx = document.getElementById('attendanceChart');
             if(!ctx) return;
             if(att === 0 && noAtt === 0) { att = 0.1; noAtt = 0.1; }
+            
+            const currentNavyColor = getComputedStyle(document.documentElement).getPropertyValue('--color-navy').trim();
+            const bgC = `rgb(${currentNavyColor.split(' ').join(',')})`;
 
             if(chartInstance) {
                 chartInstance.data.datasets[0].data = [att, noAtt];
@@ -787,7 +820,7 @@
                         labels: ['Очно', 'Амжихгүй'],
                         datasets: [{
                             data: [att, noAtt],
-                            backgroundColor: ['#5c3a21', '#e5e7eb'], 
+                            backgroundColor: [bgC, '#e5e7eb'], 
                             borderWidth: 2,
                             borderColor: '#ffffff',
                             hoverOffset: 5
@@ -844,7 +877,6 @@
                         createdAt: serverTimestamp() 
                     });
                 } catch (err) {
-                    console.error("DB error", err);
                     saveLocalWish(newWish);
                 }
             } else {
@@ -989,7 +1021,7 @@
                 if (s.alpha > 1 || s.alpha < 0) s.speed = -s.speed;
                 ctx.save(); 
                 ctx.globalAlpha = Math.abs(s.alpha); 
-                ctx.fillStyle = "#c97a3a";
+                ctx.fillStyle = currentStarColor;
                 ctx.beginPath(); 
                 ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2); 
                 ctx.fill(); 
